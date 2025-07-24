@@ -1,0 +1,27 @@
+{
+  "name": "interview-assessments-preparation",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/index.js",
+  "scripts": {
+    "test": "jest",
+    "build": "npx tsc --project tsconfig.json",
+    "start": "node dist/index.js",
+    "dev": "yarn build && yarn start"
+  },
+  "author": "William Blake",
+  "license": "ISC",
+  "dependencies": {
+    "@types/jest": "^30.0.0",
+    "@types/node": "^24.1.0",
+    "eslint": "^9.31.0",
+    "jest": "^30.0.5",
+    "prettier": "^3.6.2",
+    "typescript": "^5.8.3"
+  },
+  "devDependencies": {
+    "@babel/preset-typescript": "^7.27.1",
+    "@jest/globals": "^30.0.5",
+    "ts-jest": "^29.4.0"
+  }
+}
