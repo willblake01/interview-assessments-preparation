@@ -1,12 +1,10 @@
-type EventType = 'userSignedUp' | 'orderPlaced';
-type EventPayload = Record<string, unknown>;
-type EventHandler = (payload: EventPayload) => void;
+import { EventHandler, EventPayload, EventType } from "./types"; 
 
-export class EventBus {
+export class EventBus<EventMap extends Record<EventType, EventPayload> = Record<EventType, EventPayload>> {
     private subscribers: Map<EventType, EventHandler[]> = new Map();
 
     // Emit an event to all subscribers, often synonymous with emit()
-    publish(event: EventType, payload: EventPayload): void {
+    publish<K extends EventType>(event: K, payload: EventMap[K]): void {
         const handlers = this.subscribers.get(event) || [];
 
         for (const handler of handlers) {
@@ -19,7 +17,7 @@ export class EventBus {
     };
 
     // Register a listener (sometimes returns a function to unsubscribe)
-    subscribe(event: EventType, handler: EventHandler): void {
+    subscribe<K extends EventType>(event: K, handler: EventHandler): void {
         const handlers = this.subscribers.get(event) || [];
 
         handlers.push(handler);
@@ -27,7 +25,7 @@ export class EventBus {
     };
 
     // Remove a specific handler for an event
-    unsubscribe(event: EventType, handler: EventHandler):void {
+    unsubscribe<K extends EventType>(event: K, handler: EventHandler): void {
         const handlers = this.subscribers.get(event) || [];
 
         this.subscribers.set(
@@ -42,7 +40,7 @@ export class EventBus {
     };
 
     // Listen only the first time the event is emitted
-    once(event: EventType, handler: EventHandler): void {
+    once<K extends EventType>(event: K, handler: EventHandler): void {
         const onceHandler = (payload: EventPayload) => {
             handler(payload);
             this.unsubscribe(event, onceHandler);
@@ -52,12 +50,12 @@ export class EventBus {
     };
 
     // Alias of unsubscribe, or can be used to remove a listener
-    off(event: EventType, handler: EventHandler): void {
+    off<K extends EventType>(event: K, handler: EventHandler): void {
         this.unsubscribe(event, handler);
     };
 
     // Remove all listeners (optionally for a specific event)
-    clear(event?: EventType): void {
+    clear<K extends EventType>(event?: K): void {
         if (event) {
             this.subscribers.delete(event);
         } else {
@@ -65,8 +63,8 @@ export class EventBus {
         }
     };
 
-    // Returns true if any listeners are registered for the event 
-    hasSubscribers(event: EventType): boolean {
+    // Returns true if any listeners are registered for the event
+    hasSubscribers<K extends EventType>(event: K): boolean {
         return (this.subscribers.get(event) || []).length > 0;
     };
 };
