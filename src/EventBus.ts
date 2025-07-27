@@ -1,24 +1,15 @@
 import { EventHandler, EventPayload, EventType } from "./types"; 
 
-export class EventBus<EventMap extends Record<EventType, EventPayload> = Record<EventType, EventPayload>> {
+export class EventBus<EventMap extends Record<EventType, EventPayload>> {
     private subscribers: Map<EventType, EventHandler[]> = new Map();
-
-    // Emit an event to all subscribers, often synonymous with emit()
-    publish<K extends EventType>(event: K, payload: EventMap[K]): void {
-        const handlers = this.subscribers.get(event) || [];
-
-        for (const handler of handlers) {
-            try {
-                handler(payload);
-            } catch (error) {
-                console.error(`Error occurred while handling event '${event}':`, error);
-            }
-        }
-    };
 
     // Register a listener (sometimes returns a function to unsubscribe)
     subscribe<K extends EventType>(event: K, handler: EventHandler): void {
-        const handlers = this.subscribers.get(event) || [];
+        const handlers = this.subscribers.get(event) ?? [];
+
+        if (handlers.includes(handler)) {
+            return; // Prevent duplicate subscriptions
+        };
 
         handlers.push(handler);
         this.subscribers.set(event, handlers);
@@ -26,7 +17,11 @@ export class EventBus<EventMap extends Record<EventType, EventPayload> = Record<
 
     // Remove a specific handler for an event
     unsubscribe<K extends EventType>(event: K, handler: EventHandler): void {
-        const handlers = this.subscribers.get(event) || [];
+        const handlers = this.subscribers.get(event) ?? [];
+
+        if (!handlers.includes(handler)) {
+            return; // Handler not found
+        };
 
         this.subscribers.set(
             event,
@@ -34,9 +29,26 @@ export class EventBus<EventMap extends Record<EventType, EventPayload> = Record<
         );
     };
 
+    // Emit an event to all subscribers, often synonymous with emit()
+    publish<K extends EventType>(event: K, payload: EventMap[K]): void {
+        const handlers = this.subscribers.get(event) ?? [];
+
+        if (!handlers.length) {
+            return; // No subscribers for this event
+        };
+
+        for (const handler of handlers) {
+            try {
+                handler(payload);
+            } catch (error) {
+                console.error(`Error occurred while handling event '${event}':`, error);
+            };
+        };
+    };
+
     // Alias of subscribe, or can be used to add a listener
     on(event: EventType, handler: EventHandler): void {
-        
+        this.subscribe(event, handler);
     };
 
     // Listen only the first time the event is emitted
@@ -60,11 +72,11 @@ export class EventBus<EventMap extends Record<EventType, EventPayload> = Record<
             this.subscribers.delete(event);
         } else {
             this.subscribers.clear();
-        }
+        };
     };
 
     // Returns true if any listeners are registered for the event
     hasSubscribers<K extends EventType>(event: K): boolean {
-        return (this.subscribers.get(event) || []).length > 0;
+        return (this.subscribers.get(event) ?? []).length > 0;
     };
 };
