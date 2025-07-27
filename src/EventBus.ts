@@ -47,7 +47,7 @@ export class EventBus<EventMap extends Record<EventType, EventPayload>> {
     };
 
     // Alias of subscribe, or can be used to add a listener
-    on(event: EventType, handler: EventHandler): void {
+    on<K extends EventType>(event: K, handler: EventHandler): void {
         this.subscribe(event, handler);
     };
 
